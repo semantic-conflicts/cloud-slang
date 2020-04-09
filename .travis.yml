@@ -1,27 +1,26 @@
+
+sudo: required
 language: java
 
 jdk:
-  - oraclejdk8
-  - openjdk7
+  - openjdk8
 
-before_deploy: >
-  ant -f build/ant.xml
-  
+script:
+  - mvn clean compile assembly:single
+
+before_deploy:
+    - mkdir MiningBuild
+    - find . -name '*.jar' -exec cp {} ./MiningBuild \;
+    - cd /home/travis/build/semantic-conflicts/cloud-slang/MiningBuild
+    - tar -zcvf result.tar.gz *
 deploy:
   provider: releases
-  prerelease: true
-  api_key:
-    secure: XUEVH4recWuA+xxjmy+AXeUSEZINSSeDe5xOALAr7rH3DvYGMV2tC4vO33zmOfyevnn2FxiDJLQqewlc/x9cComjCsuBXys8eMXaoEaFB6UIayBx0iilNQ56ItYnbAXz580/oDvJEVPAzXyGuOLhkW7qvwbVq0fXNauAMRUKrYY=
-  file:
-    - build/target/cloudslang-cli/cslang-cli.zip
-    - build/target/cloudslang-cli/cslang-cli.tar.gz
-    - build/target/cslang-builder/cslang-builder.zip
+  api_key: $GITHUB_TOKEN
+  file: result.tar.gz
+  name: fetchjar-3235e70f27c192ae7fd3376ee1cf4eea2db30df9
+  file_glob: true
+  overwrite: true
   skip_cleanup: true
   on:
-    repo: CloudSlang/cloud-slang
-    tags: true
-    branch: master
-    jdk: openjdk7
-
-after_success:
-  - mvn cobertura:cobertura coveralls:report
+    all_branches: true 
+            
